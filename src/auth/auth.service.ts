@@ -7,6 +7,7 @@ import { User } from 'src/users/user.entity';
 import { LoginDto, SignupDto } from './dto/auth.dto';
 import * as fs from 'fs';
 import * as path from 'path';
+import { config } from 'src/config';
 
 @Injectable()
 export class AuthService {
@@ -75,7 +76,7 @@ export class AuthService {
     };
     user.password = '';
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: this.jwtService.sign(payload,{ secret: config.auth.jwtPrivateKey }),
       user,
     };
   }

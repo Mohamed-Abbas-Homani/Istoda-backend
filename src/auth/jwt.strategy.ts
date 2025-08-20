@@ -24,14 +24,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const user = await this.userRepo.findOne({
       where: { id: payload.sub },
     });
-    console.log(user);
-    // if (!user) {
-    //   throw new UnauthorizedException('User not found or inactive');
-    // }
+    if (!user) {
+      throw new UnauthorizedException('User not found or inactive');
+    }
 
-    // Save user in context helper for later access in request scope
     if (user) this.contextHelper.setUser(user);
 
-    return user ?? new User(); // Passport will attach this to req.user
+    return user; 
   }
 }
