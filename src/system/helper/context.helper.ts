@@ -3,7 +3,7 @@ import { ClsService } from 'nestjs-cls';
 import { EntityManager } from 'typeorm/entity-manager/EntityManager';
 import { DataSource } from 'typeorm';
 import { APP_CLS } from '../../app.constants';
-import { User } from 'src/users/entity/user.entity';
+import { User } from 'src/users/user.entity';
 
 @Injectable()
 export class ContextHelper {

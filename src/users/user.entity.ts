@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Story } from 'src/stories/story.entity';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 
 @Entity()
 export class User {
@@ -16,4 +17,7 @@ export class User {
 
   @Column({ nullable: true })
   profile_picture: string;
+
+  @OneToMany(() => Story, (story) => story.user)
+  stories: Story[];
 }

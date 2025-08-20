@@ -7,6 +7,7 @@ import { ClsModule } from 'nestjs-cls';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmConfigService } from './database/typeorm-config.service';
 import { DataSource, DataSourceOptions } from 'typeorm';
+import { StoriesModule } from './stories/stories.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { DataSource, DataSourceOptions } from 'typeorm';
     }),
     AuthModule,
     UsersModule,
+    StoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

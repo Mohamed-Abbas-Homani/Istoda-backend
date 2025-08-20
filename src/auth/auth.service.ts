@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { User } from 'src/users/entity/user.entity';
+import { User } from 'src/users/user.entity';
 import { LoginDto, SignupDto } from './dto/auth.dto';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -52,7 +52,7 @@ export class AuthService {
         throw new Error('Failed to save profile picture');
       }
     }
-
+    savedUser.password = ""
     return savedUser;
   }
 
@@ -73,8 +73,10 @@ export class AuthService {
       username: user.username,
       email: user.email,
     };
+    user.password = ""
     return {
       access_token: this.jwtService.sign(payload),
+      user
     };
   }
 }
