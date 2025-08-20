@@ -33,7 +33,7 @@ export const config = {
     level: process.env.LOG_LEVEL || 'info',
   },
   auth: {
-    jwtPrivateKey: process.env.AUTH_JWT_PRIVATE_KEY,
+    jwtPrivateKey: process.env.AUTH_JWT_PRIVATE_KEY || 'test',
     jwtOtpShortExpiry:
       Number(process.env.AUTH_JWT_OTP_SHORT_EXPIRY_SECONDS) || 180000,
     jwtExpiry: Number(process.env.AUTH_JWT_EXPIRY_SECONDS) || 86400000,

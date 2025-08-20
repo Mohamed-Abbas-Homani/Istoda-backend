@@ -14,7 +14,11 @@ export class StoryService {
     private readonly storyRepo: Repository<Story>,
   ) {}
 
-  async createStory(createStoryDto: CreateStoryDto, coverFile: Express.Multer.File | undefined, user: User) {
+  async createStory(
+    createStoryDto: CreateStoryDto,
+    coverFile: Express.Multer.File | undefined,
+    user: User,
+  ) {
     // Step 1: Save story without cover_photo to get ID
     const story = this.storyRepo.create({
       ...createStoryDto,
@@ -39,20 +43,28 @@ export class StoryService {
   }
 
   async getStoriesGroupedByCategory(keyword?: string) {
-    const query = this.storyRepo.createQueryBuilder('story');
+    const query = this.storyRepo
+      .createQueryBuilder('story')
+      .leftJoinAndSelect('story.user', 'user');
 
     if (keyword) {
-      query.where('story.title ILIKE :keyword OR story.content ILIKE :keyword', { keyword: `%${keyword}%` });
+      query.where(
+        'story.title ILIKE :keyword OR story.content ILIKE :keyword',
+        { keyword: `%${keyword}%` },
+      );
     }
 
     const stories = await query.getMany();
 
     // Group by category
-    const grouped = stories.reduce((acc, story) => {
-      if (!acc[story.category]) acc[story.category] = [];
-      acc[story.category].push(story);
-      return acc;
-    }, {} as Record<string, Story[]>);
+    const grouped = stories.reduce(
+      (acc, story) => {
+        if (!acc[story.category]) acc[story.category] = [];
+        acc[story.category].push(story);
+        return acc;
+      },
+      {} as Record<string, Story[]>,
+    );
 
     return grouped;
   }

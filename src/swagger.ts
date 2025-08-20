@@ -13,10 +13,22 @@ export function setupSwagger(app: INestApplication) {
       },
     }),
   );
+
   const options = new DocumentBuilder()
     .setTitle('Project Istoda')
     .setDescription('API documentation for Istoda')
     .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'Authorization',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'access-token', // 👈 name to use in @ApiBearerAuth()
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, options);

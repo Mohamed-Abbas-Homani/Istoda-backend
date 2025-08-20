@@ -7,6 +7,7 @@ import {
   UseInterceptors,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -21,13 +22,21 @@ import {
   ApiConsumes,
   ApiBody,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { config } from 'src/config';
+import { ContextHelper } from 'src/system/helper/context.helper';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @ApiTags('stories')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth('access-token')
 @Controller('stories')
 export class StoryController {
-  constructor(private readonly storyService: StoryService) {}
+  constructor(
+    private readonly storyService: StoryService,
+    private readonly contextHelper: ContextHelper,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new story with optional cover photo' })
@@ -49,9 +58,11 @@ export class StoryController {
           callback(null, uploadPath);
         },
         filename: (req, file, callback) => {
-          // Temporary filename, will rename later in service
           const tempName =
-            Date.now() + '-' + Math.round(Math.random() * 1e9) + extname(file.originalname);
+            Date.now() +
+            '-' +
+            Math.round(Math.random() * 1e9) +
+            extname(file.originalname);
           callback(null, tempName);
         },
       }),
@@ -69,18 +80,21 @@ export class StoryController {
     @UploadedFile() coverPhoto?: Express.Multer.File,
     @Req() req?,
   ) {
-    const user = req.user;
+    const user = this.contextHelper.getUser();
     return this.storyService.createStory(createStoryDto, coverPhoto, user);
   }
 
   @Get()
   @ApiOperation({ summary: 'Get all stories grouped by category' })
-  @ApiResponse({ status: 200, description: 'Stories grouped by category returned' })
+  @ApiResponse({
+    status: 200,
+    description: 'Stories grouped by category returned',
+  })
   @ApiResponse({ status: 400, description: 'Invalid query parameter' })
-  @ApiQuery({ 
-    name: 'keyword', 
-    required: false, 
-    description: 'Optional keyword to filter stories by title or content' 
+  @ApiQuery({
+    name: 'keyword',
+    required: false,
+    description: 'Optional keyword to filter stories by title or content',
   })
   async getStories(@Query('keyword') keyword?: string) {
     return this.storyService.getStoriesGroupedByCategory(keyword);

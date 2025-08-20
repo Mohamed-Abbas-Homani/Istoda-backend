@@ -52,7 +52,7 @@ export class AuthService {
         throw new Error('Failed to save profile picture');
       }
     }
-    savedUser.password = ""
+    savedUser.password = '';
     return savedUser;
   }
 
@@ -73,10 +73,10 @@ export class AuthService {
       username: user.username,
       email: user.email,
     };
-    user.password = ""
+    user.password = '';
     return {
       access_token: this.jwtService.sign(payload),
-      user
+      user,
     };
   }
 }

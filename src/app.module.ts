@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmConfigService } from './database/typeorm-config.service';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { StoriesModule } from './stories/stories.module';
+import { SystemModule } from './system/system.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { StoriesModule } from './stories/stories.module';
       global: true,
       middleware: { mount: true },
     }),
+    SystemModule,
     AuthModule,
     UsersModule,
     StoriesModule,
