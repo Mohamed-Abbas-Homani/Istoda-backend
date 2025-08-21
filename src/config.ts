@@ -19,8 +19,8 @@ export const config = {
     username: process.env.DATABASE_USERNAME || 'postgres',
     password: process.env.DATABASE_PASSWORD || '',
     database: process.env.DATABASE_NAME || 'istoda-db',
-    synchronize: process.env.DATABASE_SYNCHRONIZE === 'true' || false,
-    logging: process.env.DATABASE_LOGGING === 'true' || false,
+    synchronize: process.env.DATABASE_SYNCHRONIZE === 'true' || true,
+    logging: process.env.DATABASE_LOGGING === 'true' || true,
     max: process.env.DATABASE_MAX_CONNECTIONS || 100,
     ssl: process.env.DATABASE_SSL_ENABLED === 'true' || false,
     rejectUnauthorized:
@@ -33,7 +33,7 @@ export const config = {
     level: process.env.LOG_LEVEL || 'debug',
   },
   auth: {
-    jwtPrivateKey: process.env.AUTH_JWT_PRIVATE_KEY || 'test',
+    jwtPrivateKey: process.env.AUTH_JWT_PRIVATE_KEY,
     jwtOtpShortExpiry:
       Number(process.env.AUTH_JWT_OTP_SHORT_EXPIRY_SECONDS) || 180000,
     jwtExpiry: Number(process.env.AUTH_JWT_EXPIRY_SECONDS) || 86400000,
