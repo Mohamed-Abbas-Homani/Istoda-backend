@@ -27,10 +27,12 @@ import {
 import { config } from 'src/config';
 import { ContextHelper } from 'src/system/helper/context.helper';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { TransactionInterceptor } from 'src/system/interceptor/transaction.interceptor';
 
 @ApiTags('stories')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('access-token')
+@UseInterceptors(TransactionInterceptor)
 @Controller('stories')
 export class StoryController {
   constructor(

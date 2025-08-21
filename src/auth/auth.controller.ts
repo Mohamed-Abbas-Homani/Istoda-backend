@@ -9,7 +9,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { AuthService } from './auth.service';
-import { SignupDto, LoginDto } from './dto/auth.dto';
+import { SignupDto, LoginDto } from './auth.dto';
 import {
   ApiTags,
   ApiOperation,
@@ -19,8 +19,10 @@ import {
 } from '@nestjs/swagger';
 import * as fs from 'fs';
 import { config } from 'src/config';
+import { TransactionInterceptor } from 'src/system/interceptor/transaction.interceptor';
 
 @ApiTags('auth')
+@UseInterceptors(TransactionInterceptor)
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}

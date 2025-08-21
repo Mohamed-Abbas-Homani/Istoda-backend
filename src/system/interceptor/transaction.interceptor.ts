@@ -30,7 +30,6 @@ export class TransactionInterceptor implements NestInterceptor {
     await queryRunner.startTransaction();
     // attach query manager with transaction to the request
     this.contextHelper.setTrx(queryRunner.manager);
-
     this.logger.debug('START_TRANSACTION', { originalUrl: req.originalUrl });
 
     return next.handle().pipe(

@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/users/user.entity';
-import { LoginDto, SignupDto } from './dto/auth.dto';
+import { LoginDto, SignupDto } from './auth.dto';
 import * as fs from 'fs';
 import * as path from 'path';
 import { config } from 'src/config';

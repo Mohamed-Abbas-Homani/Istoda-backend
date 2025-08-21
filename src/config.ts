@@ -30,7 +30,7 @@ export const config = {
     cert: process.env.DATABASE_CERT === 'true' || undefined,
   },
   log: {
-    level: process.env.LOG_LEVEL || 'info',
+    level: process.env.LOG_LEVEL || 'debug',
   },
   auth: {
     jwtPrivateKey: process.env.AUTH_JWT_PRIVATE_KEY || 'test',

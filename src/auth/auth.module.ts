@@ -5,13 +5,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
 import { User } from 'src/users/user.entity';
+import { config } from 'src/config';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
     JwtModule.register({
-      secret: 'your_jwt_secret',
-      signOptions: { expiresIn: '1h' },
+      secret: config.auth.jwtPrivateKey,
+      signOptions: { expiresIn: config.auth.jwtExpiry },
     }),
   ],
   providers: [AuthService, JwtStrategy],

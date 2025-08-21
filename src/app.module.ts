@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, MiddlewareConsumer, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -9,6 +9,7 @@ import { TypeOrmConfigService } from './database/typeorm-config.service';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { StoriesModule } from './stories/stories.module';
 import { SystemModule } from './system/system.module';
+import { LogsMiddleware } from './system/logger/logs.middleware';
 
 @Module({
   imports: [
@@ -28,6 +29,11 @@ import { SystemModule } from './system/system.module';
     StoriesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,     Logger,
+],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LogsMiddleware).forRoutes('*')
+  }
+}
