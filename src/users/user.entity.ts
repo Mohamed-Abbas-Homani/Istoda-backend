@@ -1,6 +1,8 @@
-import { Story } from 'src/stories/story.entity';
+import { Story } from 'src/story/entity/story.entity';
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-
+import { Comment } from 'src/story/entity/comment.entity';
+import { Rating } from 'src/story/entity/rating.entity';
+import { Reader } from 'src/story/entity/reader.entity';
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -18,6 +20,15 @@ export class User {
   @Column({ nullable: true })
   profile_picture: string;
 
-  @OneToMany(() => Story, (story) => story.user)
-  stories: Story[];
+@OneToMany(() => Story, (story) => story.author)
+stories: Story[];
+
+@OneToMany(() => Comment, (comment) => comment.user)
+comments: Comment[];
+
+@OneToMany(() => Rating, (rating) => rating.user)
+ratings: Rating[];
+
+@OneToMany(() => Reader, (reader) => reader.user)
+readers: Reader[];
 }

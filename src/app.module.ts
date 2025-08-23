@@ -7,7 +7,7 @@ import { ClsModule } from 'nestjs-cls';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmConfigService } from './database/typeorm-config.service';
 import { DataSource, DataSourceOptions } from 'typeorm';
-import { StoriesModule } from './stories/stories.module';
+import { StoriesModule } from './story/story.module';
 import { SystemModule } from './system/system.module';
 import { LogsMiddleware } from './system/logger/logs.middleware';
 
@@ -29,11 +29,10 @@ import { LogsMiddleware } from './system/logger/logs.middleware';
     StoriesModule,
   ],
   controllers: [AppController],
-  providers: [AppService,     Logger,
-],
+  providers: [AppService, Logger],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LogsMiddleware).forRoutes('*')
+    consumer.apply(LogsMiddleware).forRoutes('*');
   }
 }

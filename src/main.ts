@@ -17,8 +17,9 @@ async function bootstrap() {
     origin: ['http://localhost:3000'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
     credentials: true,
-    allowedHeaders: ['content-type'],
+    allowedHeaders: ['content-type', 'authorization'],
   });
+
   setupSwagger(app);
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),

@@ -76,7 +76,9 @@ export class AuthService {
     };
     user.password = '';
     return {
-      access_token: this.jwtService.sign(payload,{ secret: config.auth.jwtPrivateKey }),
+      access_token: this.jwtService.sign(payload, {
+        secret: config.auth.jwtPrivateKey,
+      }),
       user,
     };
   }
