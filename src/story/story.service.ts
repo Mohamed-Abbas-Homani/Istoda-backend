@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, Like } from 'typeorm';
 import { User } from 'src/users/user.entity';
@@ -95,7 +99,7 @@ export class StoryService {
     const stories = await query.getMany();
 
     // Add calculated fields for each story
-    return stories.map(story => ({
+    return stories.map((story) => ({
       ...story,
       readers_count: story.readers?.length || 0,
       average_rating: this.calculateAverageRating(story.ratings || []),
@@ -111,25 +115,27 @@ export class StoryService {
 
   private getRatingsSummary(ratings: Rating[]): Record<string, number> {
     const summary = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 };
-    ratings.forEach(rating => {
+    ratings.forEach((rating) => {
       summary[rating.rate.toString()] += 1;
     });
     return summary;
   }
 
-  async getStoriesGroupedByCategory(keyword?: string): Promise<Record<string, Story[]>> {
+  async getStoriesGroupedByCategory(
+    keyword?: string,
+  ): Promise<Record<string, Story[]>> {
     const stories = await this.getStories(keyword);
-    
+
     const grouped: Record<string, Story[]> = {};
-    
-    stories.forEach(story => {
-      story.categories.forEach(category => {
+
+    stories.forEach((story) => {
+      story.categories.forEach((category) => {
         if (!grouped[category.name]) {
           grouped[category.name] = [];
         }
         grouped[category.name].push(story);
       });
-      
+
       // Handle stories without categories
       if (!story.categories || story.categories.length === 0) {
         if (!grouped['Uncategorized']) {
@@ -145,7 +151,15 @@ export class StoryService {
   async getStoryById(id: string, user?: User): Promise<Story> {
     const story = await this.storyRepo.findOne({
       where: { id },
-      relations: ['author', 'categories', 'pages', 'comments', 'comments.user', 'ratings', 'readers'],
+      relations: [
+        'author',
+        'categories',
+        'pages',
+        'comments',
+        'comments.user',
+        'ratings',
+        'readers',
+      ],
     });
 
     if (!story) {
@@ -223,7 +237,11 @@ export class StoryService {
     await this.storyRepo.remove(story);
   }
 
-  async rateStory(id: string, rateStoryDto: RateStoryDto, user: User): Promise<Rating> {
+  async rateStory(
+    id: string,
+    rateStoryDto: RateStoryDto,
+    user: User,
+  ): Promise<Rating> {
     const story = await this.storyRepo.findOne({ where: { id } });
 
     if (!story) {
@@ -251,7 +269,11 @@ export class StoryService {
     return this.ratingRepo.save(rating);
   }
 
-  async markPageAsRead(storyId: string, markPageAsReadDto: MarkPageAsReadDto, user: User): Promise<Reader> {
+  async markPageAsRead(
+    storyId: string,
+    markPageAsReadDto: MarkPageAsReadDto,
+    user: User,
+  ): Promise<Reader> {
     const story = await this.storyRepo.findOne({ where: { id: storyId } });
 
     if (!story) {
@@ -260,10 +282,10 @@ export class StoryService {
 
     // Check if this page read record already exists
     const existingReader = await this.readerRepo.findOne({
-      where: { 
-        user: { id: user.id }, 
+      where: {
+        user: { id: user.id },
         story: { id: storyId },
-        page_number: markPageAsReadDto.page_number
+        page_number: markPageAsReadDto.page_number,
       },
     });
 
@@ -299,11 +321,11 @@ export class StoryService {
     }
 
     // Calculate unique readers (users who read at least one page)
-    const uniqueReaderIds = new Set(story.readers.map(r => r.user.id));
-    
+    const uniqueReaderIds = new Set(story.readers.map((r) => r.user.id));
+
     // Calculate page readers
     const pageReaders: Record<number, number> = {};
-    story.readers.forEach(reader => {
+    story.readers.forEach((reader) => {
       if (!pageReaders[reader.page_number]) {
         pageReaders[reader.page_number] = 0;
       }
@@ -321,7 +343,11 @@ export class StoryService {
   }
 
   // Page CRUD Operations
-  async createPage(storyId: string, createPageDto: CreatePageDto, user: User): Promise<Page> {
+  async createPage(
+    storyId: string,
+    createPageDto: CreatePageDto,
+    user: User,
+  ): Promise<Page> {
     const story = await this.storyRepo.findOne({
       where: { id: storyId },
       relations: ['author'],
@@ -332,7 +358,9 @@ export class StoryService {
     }
 
     if (story.author.id !== user.id) {
-      throw new BadRequestException('You can only add pages to your own stories');
+      throw new BadRequestException(
+        'You can only add pages to your own stories',
+      );
     }
 
     const page = this.pageRepo.create({
@@ -364,7 +392,11 @@ export class StoryService {
     return page;
   }
 
-  async updatePage(id: string, updatePageDto: UpdatePageDto, user: User): Promise<Page> {
+  async updatePage(
+    id: string,
+    updatePageDto: UpdatePageDto,
+    user: User,
+  ): Promise<Page> {
     const page = await this.pageRepo.findOne({
       where: { id },
       relations: ['story', 'story.author'],
@@ -375,7 +407,9 @@ export class StoryService {
     }
 
     if (page.story.author.id !== user.id) {
-      throw new BadRequestException('You can only update pages of your own stories');
+      throw new BadRequestException(
+        'You can only update pages of your own stories',
+      );
     }
 
     Object.assign(page, updatePageDto);
@@ -393,7 +427,9 @@ export class StoryService {
     }
 
     if (page.story.author.id !== user.id) {
-      throw new BadRequestException('You can only delete pages of your own stories');
+      throw new BadRequestException(
+        'You can only delete pages of your own stories',
+      );
     }
 
     await this.pageRepo.remove(page);
@@ -458,7 +494,9 @@ export class StoryService {
   }
 
   // Category CRUD Operations
-  async createCategory(createCategoryDto: CreateCategoryDto): Promise<Category> {
+  async createCategory(
+    createCategoryDto: CreateCategoryDto,
+  ): Promise<Category> {
     const category = this.categoryRepo.create(createCategoryDto);
     return this.categoryRepo.save(category);
   }
@@ -482,7 +520,10 @@ export class StoryService {
     return category;
   }
 
-  async updateCategory(id: string, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
+  async updateCategory(
+    id: string,
+    updateCategoryDto: UpdateCategoryDto,
+  ): Promise<Category> {
     const category = await this.categoryRepo.findOne({ where: { id } });
 
     if (!category) {

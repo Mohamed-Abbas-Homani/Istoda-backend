@@ -172,11 +172,10 @@ export class StoryController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('access-token')
   @UseInterceptors(TransactionInterceptor)
-  @ApiOperation({ summary: 'Rate a story (creates or updates existing rating)' })
-  async rateStory(
-    @Param('id') id: string,
-    @Body() rateStoryDto: RateStoryDto,
-  ) {
+  @ApiOperation({
+    summary: 'Rate a story (creates or updates existing rating)',
+  })
+  async rateStory(@Param('id') id: string, @Body() rateStoryDto: RateStoryDto) {
     const user = this.contextHelper.getUser();
     return this.storyService.rateStory(id, rateStoryDto, user);
   }
@@ -268,7 +267,11 @@ export class StoryController {
     @Body() createCommentDto: CreateCommentDto,
   ) {
     const user = this.contextHelper.getUser();
-    return this.storyService.createStoryComment(storyId, createCommentDto, user);
+    return this.storyService.createStoryComment(
+      storyId,
+      createCommentDto,
+      user,
+    );
   }
 
   @Post('pages/:pageId/comments')

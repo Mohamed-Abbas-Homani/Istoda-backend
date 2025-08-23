@@ -17,10 +17,10 @@ export class CreateStoryDto {
   @IsString()
   title: string;
 
-  @ApiPropertyOptional({ 
-    type: 'string', 
+  @ApiPropertyOptional({
+    type: 'string',
     format: 'binary',
-    description: 'Cover photo file upload'
+    description: 'Cover photo file upload',
   })
   @IsOptional()
   cover_photo?: any;
@@ -39,7 +39,7 @@ export class CreateStoryDto {
   @IsUUID(4, { each: true })
   @Transform(({ value }) => {
     if (typeof value === 'string') {
-      return value.split(',').map(v => v.trim());
+      return value.split(',').map((v) => v.trim());
     }
     return value;
   })
@@ -52,10 +52,10 @@ export class UpdateStoryDto {
   @IsString()
   title?: string;
 
-  @ApiPropertyOptional({ 
-    type: 'string', 
+  @ApiPropertyOptional({
+    type: 'string',
     format: 'binary',
-    description: 'Cover photo file upload'
+    description: 'Cover photo file upload',
   })
   @IsOptional()
   cover_photo?: any;
@@ -74,7 +74,7 @@ export class UpdateStoryDto {
   @IsUUID(4, { each: true })
   @Transform(({ value }) => {
     if (typeof value === 'string') {
-      return value.split(',').map(v => v.trim());
+      return value.split(',').map((v) => v.trim());
     }
     return value;
   })
@@ -82,11 +82,11 @@ export class UpdateStoryDto {
 }
 
 export class RateStoryDto {
-  @ApiProperty({ 
-    minimum: 1, 
+  @ApiProperty({
+    minimum: 1,
     maximum: 5,
     example: 4,
-    description: 'Rating from 1 to 5 stars'
+    description: 'Rating from 1 to 5 stars',
   })
   @IsInt()
   @Min(1)
@@ -95,9 +95,9 @@ export class RateStoryDto {
 }
 
 export class MarkPageAsReadDto {
-  @ApiProperty({ 
+  @ApiProperty({
     example: 1,
-    description: 'Page number that was read'
+    description: 'Page number that was read',
   })
   @IsInt()
   @Min(1)
@@ -121,7 +121,7 @@ export class CreatePageDto {
 
   @ApiPropertyOptional({
     example: { theme: 'dark', background: 'forest' },
-    description: 'JSON metadata for the page'
+    description: 'JSON metadata for the page',
   })
   @IsOptional()
   meta?: Record<string, any>;
@@ -146,7 +146,7 @@ export class UpdatePageDto {
 
   @ApiPropertyOptional({
     example: { theme: 'light', background: 'ocean' },
-    description: 'JSON metadata for the page'
+    description: 'JSON metadata for the page',
   })
   @IsOptional()
   meta?: Record<string, any>;
@@ -163,7 +163,9 @@ export class CreateCategoryDto {
   @IsString()
   name: string;
 
-  @ApiPropertyOptional({ example: 'Stories about magic and mythical creatures' })
+  @ApiPropertyOptional({
+    example: 'Stories about magic and mythical creatures',
+  })
   @IsOptional()
   @IsString()
   description?: string;

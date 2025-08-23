@@ -22,16 +22,16 @@ export class Comment {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @ManyToOne(() => Story, (story) => story.comments, { 
+  @ManyToOne(() => Story, (story) => story.comments, {
     onDelete: 'CASCADE',
-    nullable: true 
+    nullable: true,
   })
   @JoinColumn({ name: 'story_id' })
   story: Story;
 
-  @ManyToOne(() => Page, (page) => page.comments, { 
+  @ManyToOne(() => Page, (page) => page.comments, {
     onDelete: 'CASCADE',
-    nullable: true 
+    nullable: true,
   })
   @JoinColumn({ name: 'page_id' })
   page: Page;

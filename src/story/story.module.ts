@@ -8,7 +8,7 @@ import { Story } from './entity/story.entity';
 import { Category } from './entity/category.entity';
 import { Page } from './entity/page.entity';
 import { CategoryController } from './controller/category.controller';
-import {Comment} from './entity/comment.entity';
+import { Comment } from './entity/comment.entity';
 import { Rating } from './entity/rating.entity';
 import { Reader } from './entity/reader.entity';
 

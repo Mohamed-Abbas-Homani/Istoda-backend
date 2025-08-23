@@ -20,15 +20,15 @@ export class User {
   @Column({ nullable: true })
   profile_picture: string;
 
-@OneToMany(() => Story, (story) => story.author)
-stories: Story[];
+  @OneToMany(() => Story, (story) => story.author)
+  stories: Story[];
 
-@OneToMany(() => Comment, (comment) => comment.user)
-comments: Comment[];
+  @OneToMany(() => Comment, (comment) => comment.user)
+  comments: Comment[];
 
-@OneToMany(() => Rating, (rating) => rating.user)
-ratings: Rating[];
+  @OneToMany(() => Rating, (rating) => rating.user)
+  ratings: Rating[];
 
-@OneToMany(() => Reader, (reader) => reader.user)
-readers: Reader[];
+  @OneToMany(() => Reader, (reader) => reader.user)
+  readers: Reader[];
 }
