@@ -29,7 +29,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     if (user) this.contextHelper.setUser(user);
-
     return user;
   }
 }

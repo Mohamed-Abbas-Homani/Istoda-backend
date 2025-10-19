@@ -21,8 +21,8 @@ export class Category {
   @Column({ default: '#000000' })
   color: string;
 
-  @CreateDateColumn()
-  created_at: Date;
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
 
   @ManyToMany(() => Story, (story) => story.categories)
   stories: Story[];

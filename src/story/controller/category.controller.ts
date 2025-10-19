@@ -10,7 +10,11 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { StoryService } from '../story.service';
-import { CreateCategoryDto, UpdateCategoryDto } from '../story.dto';
+import {
+  CreateCategoryDto,
+  UpdateCategoryDto,
+  CategoryDto,
+} from '../story.dto';
 import {
   ApiTags,
   ApiOperation,
@@ -31,7 +35,11 @@ export class CategoryController {
   @ApiBearerAuth('access-token')
   @UseInterceptors(TransactionInterceptor)
   @ApiOperation({ summary: 'Create a new category' })
-  @ApiResponse({ status: 201, description: 'Category successfully created' })
+  @ApiResponse({
+    status: 201,
+    description: 'Category successfully created',
+    type: CategoryDto,
+  })
   async createCategory(@Body() createCategoryDto: CreateCategoryDto) {
     return this.storyService.createCategory(createCategoryDto);
   }
@@ -41,6 +49,7 @@ export class CategoryController {
   @ApiResponse({
     status: 200,
     description: 'Categories retrieved successfully',
+    type: [CategoryDto],
   })
   async getCategories() {
     return this.storyService.getCategories();
@@ -49,7 +58,11 @@ export class CategoryController {
   @Get(':id')
   @ApiOperation({ summary: 'Get category by ID' })
   @ApiParam({ name: 'id', description: 'Category ID' })
-  @ApiResponse({ status: 200, description: 'Category retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Category retrieved successfully',
+    type: CategoryDto,
+  })
   @ApiResponse({ status: 404, description: 'Category not found' })
   async getCategoryById(@Param('id') id: string) {
     return this.storyService.getCategoryById(id);
@@ -61,7 +74,11 @@ export class CategoryController {
   @UseInterceptors(TransactionInterceptor)
   @ApiOperation({ summary: 'Update category' })
   @ApiParam({ name: 'id', description: 'Category ID' })
-  @ApiResponse({ status: 200, description: 'Category updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Category updated successfully',
+    type: CategoryDto,
+  })
   @ApiResponse({ status: 404, description: 'Category not found' })
   async updateCategory(
     @Param('id') id: string,

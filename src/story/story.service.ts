@@ -17,9 +17,9 @@ import {
   CreateCommentDto,
   CreateCategoryDto,
   UpdateCategoryDto,
-  MarkPageAsReadDto,
+  UpdateReadingProgressDto,
 } from './story.dto';
-import { Story } from './entity/story.entity';
+import { Story, StoryStatus } from './entity/story.entity';
 import { Page } from './entity/page.entity';
 import { Category } from './entity/category.entity';
 import { Comment } from './entity/comment.entity';
@@ -51,6 +51,8 @@ export class StoryService {
   ): Promise<Story> {
     const story = this.storyRepo.create({
       title: createStoryDto.title,
+      description: createStoryDto.description,
+      status: (createStoryDto.status as StoryStatus) || StoryStatus.PUBLISHED,
       author: user,
     });
 
@@ -71,7 +73,7 @@ export class StoryService {
       const newPath = join('./uploads', newFilename);
 
       await rename(oldPath, newPath);
-      savedStory.cover_photo = newFilename;
+      savedStory.coverPhoto = newFilename;
       await this.storyRepo.save(savedStory);
     }
 
@@ -102,8 +104,8 @@ export class StoryService {
     return stories.map((story) => ({
       ...story,
       readers_count: story.readers?.length || 0,
-      average_rating: this.calculateAverageRating(story.ratings || []),
-      ratings_summary: this.getRatingsSummary(story.ratings || []),
+      averageRating: this.calculateAverageRating(story.ratings || []),
+      ratingsSummary: this.getRatingsSummary(story.ratings || []),
     }));
   }
 
@@ -151,15 +153,7 @@ export class StoryService {
   async getStoryById(id: string, user?: User): Promise<Story> {
     const story = await this.storyRepo.findOne({
       where: { id },
-      relations: [
-        'author',
-        'categories',
-        'pages',
-        'comments',
-        'comments.user',
-        'ratings',
-        'readers',
-      ],
+      relations: ['author', 'categories', 'pages', 'comments', 'comments.user'],
     });
 
     if (!story) {
@@ -169,11 +163,15 @@ export class StoryService {
     // Add calculated fields
     const storyWithStats = {
       ...story,
-      readers_count: story.readers?.length || 0,
-      average_rating: this.calculateAverageRating(story.ratings || []),
-      ratings_summary: this.getRatingsSummary(story.ratings || []),
+      ...(await this.getStoryStats(id)),
     };
 
+    if (user) {
+      const rating = await this.ratingRepo.findOne({
+        where: { story: { id }, user: { id: user.id } },
+      });
+      storyWithStats['userRating'] = rating?.rate ?? null;
+    }
     return storyWithStats;
   }
 
@@ -198,6 +196,10 @@ export class StoryService {
 
     // Update basic fields
     if (updateStoryDto.title) story.title = updateStoryDto.title;
+    if (updateStoryDto.description !== undefined)
+      story.description = updateStoryDto.description;
+    if (updateStoryDto.status)
+      story.status = updateStoryDto.status as StoryStatus;
 
     // Handle categories update
     if (updateStoryDto.categoryIds) {
@@ -214,7 +216,7 @@ export class StoryService {
       const newPath = join('./uploads', newFilename);
 
       await rename(oldPath, newPath);
-      story.cover_photo = newFilename;
+      story.coverPhoto = newFilename;
     }
 
     return this.storyRepo.save(story);
@@ -269,9 +271,9 @@ export class StoryService {
     return this.ratingRepo.save(rating);
   }
 
-  async markPageAsRead(
+  async updateReadingProgress(
     storyId: string,
-    markPageAsReadDto: MarkPageAsReadDto,
+    updateReadingProgressDto: UpdateReadingProgressDto,
     user: User,
   ): Promise<Reader> {
     const story = await this.storyRepo.findOne({ where: { id: storyId } });
@@ -280,22 +282,23 @@ export class StoryService {
       throw new NotFoundException('Story not found');
     }
 
-    // Check if this page read record already exists
-    const existingReader = await this.readerRepo.findOne({
+    // Check if reader record already exists for this user and story
+    let reader = await this.readerRepo.findOne({
       where: {
         user: { id: user.id },
         story: { id: storyId },
-        page_number: markPageAsReadDto.page_number,
       },
     });
 
-    if (existingReader) {
-      return existingReader; // Already marked as read
+    if (reader) {
+      // Update existing reader's current page
+      reader.currentPageNumber = updateReadingProgressDto.currentPageNumber;
+      return this.readerRepo.save(reader);
     }
 
     // Create new reader record
-    const reader = this.readerRepo.create({
-      page_number: markPageAsReadDto.page_number,
+    reader = this.readerRepo.create({
+      currentPageNumber: updateReadingProgressDto.currentPageNumber,
       user,
       story,
     });
@@ -304,41 +307,30 @@ export class StoryService {
   }
 
   async getStoryStats(storyId: string): Promise<{
-    total_readers: number;
-    unique_readers: number;
-    page_readers: Record<number, number>;
-    average_rating: number;
-    ratings_summary: Record<string, number>;
-    total_ratings: number;
+    readersCount: number;
+    averageRating: number;
+    ratingsSummary: Record<string, number>;
+    totalRatings: number;
+    commentsCount: number;
   }> {
     const story = await this.storyRepo.findOne({
       where: { id: storyId },
-      relations: ['ratings', 'readers.user'],
+      relations: ['ratings', 'readers', 'comments'],
     });
 
     if (!story) {
       throw new NotFoundException('Story not found');
     }
 
-    // Calculate unique readers (users who read at least one page)
-    const uniqueReaderIds = new Set(story.readers.map((r) => r.user.id));
-
-    // Calculate page readers
-    const pageReaders: Record<number, number> = {};
-    story.readers.forEach((reader) => {
-      if (!pageReaders[reader.page_number]) {
-        pageReaders[reader.page_number] = 0;
-      }
-      pageReaders[reader.page_number] += 1;
-    });
+    // Count unique readers (users who started reading the story)
+    const readersCount = story.readers.length;
 
     return {
-      total_readers: story.readers.length,
-      unique_readers: uniqueReaderIds.size,
-      page_readers: pageReaders,
-      average_rating: this.calculateAverageRating(story.ratings),
-      ratings_summary: this.getRatingsSummary(story.ratings),
-      total_ratings: story.ratings.length,
+      readersCount: readersCount,
+      averageRating: this.calculateAverageRating(story.ratings),
+      ratingsSummary: this.getRatingsSummary(story.ratings),
+      totalRatings: story.ratings.length,
+      commentsCount: story.comments.length,
     };
   }
 
@@ -375,7 +367,7 @@ export class StoryService {
     return this.pageRepo.find({
       where: { story: { id: storyId } },
       relations: ['comments', 'comments.user'],
-      order: { page_number: 'ASC' },
+      order: { pageNumber: 'ASC' },
     });
   }
 
@@ -474,6 +466,20 @@ export class StoryService {
     });
 
     return this.commentRepo.save(comment);
+  }
+
+  async getCommentsByPage(pageId: string): Promise<Comment[]> {
+    const page = await this.pageRepo.findOne({ where: { id: pageId } });
+
+    if (!page) {
+      throw new NotFoundException('Page not found');
+    }
+
+    return this.commentRepo.find({
+      where: { page: { id: pageId } },
+      relations: ['user'],
+      order: { createdAt: 'ASC' },
+    });
   }
 
   async deleteComment(id: string, user: User): Promise<void> {

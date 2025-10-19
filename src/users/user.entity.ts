@@ -17,8 +17,8 @@ export class User {
   @Column()
   password: string;
 
-  @Column({ nullable: true })
-  profile_picture: string;
+  @Column({ name: 'profile_picture', nullable: true })
+  profilePicture: string;
 
   @OneToMany(() => Story, (story) => story.author)
   stories: Story[];

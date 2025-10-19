@@ -43,7 +43,7 @@ export class AuthService {
         fs.renameSync(profilePicture.path, newFilePath);
 
         // Update user with profile picture path
-        savedUser.profile_picture = newFileName;
+        savedUser.profilePicture = newFileName;
         await this.userRepo.save(savedUser);
       } catch (error) {
         // If file operations fail, clean up and throw error
@@ -76,10 +76,21 @@ export class AuthService {
     };
     user.password = '';
     return {
-      access_token: this.jwtService.sign(payload, {
+      token: this.jwtService.sign(payload, {
         secret: config.auth.jwtPrivateKey,
       }),
       user,
     };
+  }
+
+  async generateToken(user: User): Promise<string> {
+    const payload = {
+      sub: user.id,
+      username: user.username,
+      email: user.email,
+    };
+    return this.jwtService.sign(payload, {
+      secret: config.auth.jwtPrivateKey,
+    });
   }
 }

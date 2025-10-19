@@ -1,5 +1,6 @@
 import { IsEmail, IsNotEmpty, MinLength, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { UserDto } from '../users/user.dto';
 
 export class SignupDto {
   @ApiProperty({ description: 'Username', example: 'john_doe' })
@@ -25,7 +26,7 @@ export class SignupDto {
     required: false,
   })
   @IsOptional()
-  profile_picture?: any;
+  profilePicture?: any;
 }
 
 export class LoginDto {
@@ -36,4 +37,15 @@ export class LoginDto {
   @ApiProperty({ description: 'Password', example: 'password123' })
   @IsNotEmpty()
   password: string;
+}
+
+export class AuthResponseDto {
+  @ApiProperty({ type: () => UserDto })
+  user: UserDto;
+
+  @ApiProperty({
+    example:
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+  })
+  token: string;
 }

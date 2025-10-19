@@ -6,8 +6,10 @@ import {
   OneToMany,
   JoinColumn,
   CreateDateColumn,
+  UpdateDateColumn,
   ManyToMany,
   JoinTable,
+  Index,
 } from 'typeorm';
 import { User } from 'src/users/user.entity';
 import { Page } from './page.entity';
@@ -16,7 +18,16 @@ import { Category } from './category.entity';
 import { Rating } from './rating.entity';
 import { Reader } from './reader.entity';
 
+export enum StoryStatus {
+  DRAFT = 'draft',
+  PUBLISHED = 'published',
+  ARCHIVED = 'archived',
+}
+
 @Entity('stories')
+@Index('IDX_stories_title', { synchronize: false })
+@Index('IDX_stories_publishing_date', { synchronize: false })
+@Index('IDX_stories_author_id', { synchronize: false })
 export class Story {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -24,15 +35,27 @@ export class Story {
   @Column()
   title: string;
 
+  @Column({ type: 'text', nullable: true })
+  description: string;
+
   @ManyToOne(() => User, (user) => user.stories, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'author_id' })
   author: User;
 
-  @Column({ nullable: true })
-  cover_photo: string;
+  @Column({ name: 'cover_photo', nullable: true })
+  coverPhoto: string;
+
+  @Column({
+    type: 'varchar',
+    default: StoryStatus.PUBLISHED,
+  })
+  status: StoryStatus;
 
   @CreateDateColumn({ name: 'publishing_date' })
   publishingDate: Date;
+
+  @UpdateDateColumn({ name: 'updated_at', nullable: true })
+  updatedAt: Date;
 
   @OneToMany(() => Page, (page) => page.story, { cascade: true })
   pages: Page[];

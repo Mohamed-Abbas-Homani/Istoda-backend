@@ -9,7 +9,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { AuthService } from './auth.service';
-import { SignupDto, LoginDto } from './auth.dto';
+import { SignupDto, LoginDto, AuthResponseDto } from './auth.dto';
 import {
   ApiTags,
   ApiOperation,
@@ -29,11 +29,15 @@ export class AuthController {
 
   @Post('signup')
   @ApiOperation({ summary: 'User signup with profile picture' })
-  @ApiResponse({ status: 201, description: 'User successfully registered' })
+  @ApiResponse({
+    status: 201,
+    description: 'User successfully registered',
+    type: AuthResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Validation error' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
-    FileInterceptor('profile_picture', {
+    FileInterceptor('profilePicture', {
       storage: diskStorage({
         destination: (req, file, callback) => {
           const uploadPath = './uploads';
@@ -66,7 +70,9 @@ export class AuthController {
     @Body() signupDto: SignupDto,
     @UploadedFile() profilePicture?: Express.Multer.File,
   ) {
-    return this.authService.signup(signupDto, profilePicture);
+    const user = await this.authService.signup(signupDto, profilePicture);
+    const token = await this.authService.generateToken(user);
+    return { user, token };
   }
 
   @Post('login')
@@ -74,6 +80,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Login successful, returns JWT token',
+    type: AuthResponseDto,
   })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   @ApiBody({ type: LoginDto })

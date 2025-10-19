@@ -24,9 +24,13 @@ import {
   CreatePageDto,
   UpdatePageDto,
   CreateCommentDto,
-  CreateCategoryDto,
-  UpdateCategoryDto,
-  MarkPageAsReadDto,
+  UpdateReadingProgressDto,
+  StoryDto,
+  PageDto,
+  CommentDto,
+  RatingDto,
+  ReaderDto,
+  CategoryDto,
 } from '../story.dto';
 import {
   ApiTags,
@@ -42,6 +46,7 @@ import { config } from 'src/config';
 import { ContextHelper } from 'src/system/helper/context.helper';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { TransactionInterceptor } from 'src/system/interceptor/transaction.interceptor';
+import { OptionalJwtAuthGuard } from 'src/auth/optional-jwt.guard';
 
 @ApiTags('stories')
 @Controller('stories')
@@ -57,7 +62,11 @@ export class StoryController {
   @ApiBearerAuth('access-token')
   @UseInterceptors(TransactionInterceptor)
   @ApiOperation({ summary: 'Create a new story with optional cover photo' })
-  @ApiResponse({ status: 201, description: 'Story successfully created' })
+  @ApiResponse({
+    status: 201,
+    description: 'Story successfully created',
+    type: StoryDto,
+  })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FileInterceptor('cover_photo', {
@@ -97,6 +106,11 @@ export class StoryController {
 
   @Get()
   @ApiOperation({ summary: 'Get all stories with optional filtering' })
+  @ApiResponse({
+    status: 200,
+    description: 'Stories retrieved successfully',
+    type: [StoryDto],
+  })
   @ApiQuery({ name: 'keyword', required: false })
   @ApiQuery({ name: 'categoryId', required: false })
   async getStories(
@@ -115,9 +129,15 @@ export class StoryController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get story by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Story retrieved successfully',
+    type: StoryDto,
+  })
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiParam({ name: 'id', description: 'Story ID' })
-  async getStoryById(@Param('id') id: string) {
-    return this.storyService.getStoryById(id);
+  async getStoryById(@Param('id') id: string, @Req() req) {
+    return this.storyService.getStoryById(id, req.user);
   }
 
   @Put(':id')
@@ -125,6 +145,11 @@ export class StoryController {
   @ApiBearerAuth('access-token')
   @UseInterceptors(TransactionInterceptor)
   @ApiOperation({ summary: 'Update story' })
+  @ApiResponse({
+    status: 200,
+    description: 'Story updated successfully',
+    type: StoryDto,
+  })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FileInterceptor('cover_photo', {
@@ -175,22 +200,36 @@ export class StoryController {
   @ApiOperation({
     summary: 'Rate a story (creates or updates existing rating)',
   })
+  @ApiResponse({
+    status: 201,
+    description: 'Story rated successfully',
+    type: RatingDto,
+  })
   async rateStory(@Param('id') id: string, @Body() rateStoryDto: RateStoryDto) {
     const user = this.contextHelper.getUser();
     return this.storyService.rateStory(id, rateStoryDto, user);
   }
 
-  @Post(':id/read')
+  @Post(':id/reading-progress')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('access-token')
   @UseInterceptors(TransactionInterceptor)
-  @ApiOperation({ summary: 'Mark a specific page as read' })
-  async markPageAsRead(
+  @ApiOperation({ summary: 'Update reading progress for a story' })
+  @ApiResponse({
+    status: 201,
+    description: 'Reading progress updated successfully',
+    type: ReaderDto,
+  })
+  async updateReadingProgress(
     @Param('id') id: string,
-    @Body() markPageAsReadDto: MarkPageAsReadDto,
+    @Body() updateReadingProgressDto: UpdateReadingProgressDto,
   ) {
     const user = this.contextHelper.getUser();
-    return this.storyService.markPageAsRead(id, markPageAsReadDto, user);
+    return this.storyService.updateReadingProgress(
+      id,
+      updateReadingProgressDto,
+      user,
+    );
   }
 
   @Get(':id/stats')
@@ -206,6 +245,11 @@ export class StoryController {
   @ApiBearerAuth('access-token')
   @UseInterceptors(TransactionInterceptor)
   @ApiOperation({ summary: 'Create a new page for a story' })
+  @ApiResponse({
+    status: 201,
+    description: 'Page created successfully',
+    type: PageDto,
+  })
   @ApiParam({ name: 'storyId', description: 'Story ID' })
   async createPage(
     @Param('storyId') storyId: string,
@@ -217,6 +261,11 @@ export class StoryController {
 
   @Get(':storyId/pages')
   @ApiOperation({ summary: 'Get all pages for a story' })
+  @ApiResponse({
+    status: 200,
+    description: 'Pages retrieved successfully',
+    type: [PageDto],
+  })
   @ApiParam({ name: 'storyId', description: 'Story ID' })
   async getPagesByStory(@Param('storyId') storyId: string) {
     return this.storyService.getPagesByStory(storyId);
@@ -224,6 +273,11 @@ export class StoryController {
 
   @Get('pages/:pageId')
   @ApiOperation({ summary: 'Get page by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Page retrieved successfully',
+    type: PageDto,
+  })
   @ApiParam({ name: 'pageId', description: 'Page ID' })
   async getPageById(@Param('pageId') pageId: string) {
     return this.storyService.getPageById(pageId);
@@ -234,6 +288,11 @@ export class StoryController {
   @ApiBearerAuth('access-token')
   @UseInterceptors(TransactionInterceptor)
   @ApiOperation({ summary: 'Update a page' })
+  @ApiResponse({
+    status: 200,
+    description: 'Page updated successfully',
+    type: PageDto,
+  })
   @ApiParam({ name: 'pageId', description: 'Page ID' })
   async updatePage(
     @Param('pageId') pageId: string,
@@ -261,6 +320,11 @@ export class StoryController {
   @ApiBearerAuth('access-token')
   @UseInterceptors(TransactionInterceptor)
   @ApiOperation({ summary: 'Create a comment on a story' })
+  @ApiResponse({
+    status: 201,
+    description: 'Comment created successfully',
+    type: CommentDto,
+  })
   @ApiParam({ name: 'storyId', description: 'Story ID' })
   async createStoryComment(
     @Param('storyId') storyId: string,
@@ -279,6 +343,11 @@ export class StoryController {
   @ApiBearerAuth('access-token')
   @UseInterceptors(TransactionInterceptor)
   @ApiOperation({ summary: 'Create a comment on a page' })
+  @ApiResponse({
+    status: 201,
+    description: 'Comment created successfully',
+    type: CommentDto,
+  })
   @ApiParam({ name: 'pageId', description: 'Page ID' })
   async createPageComment(
     @Param('pageId') pageId: string,
@@ -286,6 +355,18 @@ export class StoryController {
   ) {
     const user = this.contextHelper.getUser();
     return this.storyService.createPageComment(pageId, createCommentDto, user);
+  }
+
+  @Get('pages/:pageId/comments')
+  @ApiOperation({ summary: 'Get all comments for a page' })
+  @ApiResponse({
+    status: 200,
+    description: 'Comments retrieved successfully',
+    type: [CommentDto],
+  })
+  @ApiParam({ name: 'pageId', description: 'Page ID' })
+  async getCommentsByPage(@Param('pageId') pageId: string) {
+    return this.storyService.getCommentsByPage(pageId);
   }
 
   @Delete('comments/:commentId')

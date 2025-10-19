@@ -6,12 +6,14 @@ import {
   JoinColumn,
   CreateDateColumn,
   Unique,
+  Index,
 } from 'typeorm';
 import { User } from 'src/users/user.entity';
 import { Story } from './story.entity';
 
 @Entity('ratings')
 @Unique(['user', 'story'])
+@Index('IDX_ratings_user_story', { synchronize: false })
 export class Rating {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -27,6 +29,6 @@ export class Rating {
   @Column({ type: 'int' })
   rate: number; // 1-5 stars
 
-  @CreateDateColumn()
-  created_at: Date;
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
 }

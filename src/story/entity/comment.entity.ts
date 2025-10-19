@@ -5,12 +5,14 @@ import {
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
+  Index,
 } from 'typeorm';
 import { User } from 'src/users/user.entity';
 import { Story } from './story.entity';
 import { Page } from './page.entity';
 
 @Entity('comments')
+@Index('IDX_comments_created_at', { synchronize: false })
 export class Comment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -36,6 +38,6 @@ export class Comment {
   @JoinColumn({ name: 'page_id' })
   page: Page;
 
-  @CreateDateColumn()
-  created_at: Date;
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
 }

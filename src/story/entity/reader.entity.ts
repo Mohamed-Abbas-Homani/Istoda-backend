@@ -5,13 +5,16 @@ import {
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
+  UpdateDateColumn,
   Unique,
+  Index,
 } from 'typeorm';
 import { User } from 'src/users/user.entity';
 import { Story } from './story.entity';
 
 @Entity('readers')
-@Unique(['user', 'story', 'page_number']) // Ensure user can only be counted once per page
+@Unique(['user', 'story']) // One reader record per user per story
+@Index('IDX_readers_user_story', { synchronize: false })
 export class Reader {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -24,9 +27,12 @@ export class Reader {
   @JoinColumn({ name: 'story_id' })
   story: Story;
 
-  @Column({ type: 'int' })
-  page_number: number; // Which page they read
+  @Column({ name: 'current_page_number', type: 'int', default: 1 })
+  currentPageNumber: number; // Current page the user is reading
 
-  @CreateDateColumn()
-  created_at: Date;
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
 }
