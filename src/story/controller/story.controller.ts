@@ -69,7 +69,7 @@ export class StoryController {
   })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
-    FileInterceptor('cover_photo', {
+    FileInterceptor('coverPhoto', {
       storage: diskStorage({
         destination: (req, file, callback) => {
           const uploadPath = './uploads';
@@ -152,7 +152,7 @@ export class StoryController {
   })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
-    FileInterceptor('cover_photo', {
+    FileInterceptor('coverPhoto', {
       storage: diskStorage({
         destination: './uploads',
         filename: (req, file, callback) => {
